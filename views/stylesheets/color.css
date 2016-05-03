@@ -1,0 +1,43 @@
+.bigcircle {
+	border-radius: 36px;
+ 	width: 36px;
+  height: 36px;
+  display: inline-block;
+  margin-left: 3px;
+  margin-right: 3px;
+  padding: 1.5px;
+}
+
+.colorcircle {
+	margin-top: 10%;
+  margin-left: 10%;
+  margin-bottom: 10%;
+  margin-right: 10%;
+	height: 80%;
+	width: 80%;
+	border-radius: 80%;
+  cursor: pointer;
+}
+
+.selected {
+	border: 1px solid #777777;
+}
+
+#cc1 {
+	background-color: #ff7777;
+}
+#cc2 {
+	background-color: #ffff77;
+}
+#cc3 {
+	background-color: #77ff77;
+}
+#cc4 {
+	background-color: #77ffff;
+}
+#cc5 {
+	background-color: #7777ff;
+}
+#cc6 {
+	background-color: #ff77ff;
+}
