@@ -21,7 +21,7 @@ public class SearchEngine {
 	//parses the query, passes individual word paths to a merge, and passes doc trees into the ranker
 	ArrayList<ArrayList<String[]>> search(String querry){
 		HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>> master = new HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>>();
-		this.querry = querry.toLowerCase();
+		this.querry = querry;
 		//split query
 		String[] tokens = this.querry.split(" ");
 		for(String token: tokens){
@@ -250,11 +250,10 @@ public class SearchEngine {
 			String doc = docs.next();
 			sorter.addDoc(doc,rank.get(doc),merged.get(doc));
 		}
-		ArrayList<Node> temp= sorter.returnPaths(1);
-		if (!temp.isEmpty()){
-			Node start = temp.get(0);
-			search.add(start.getPath());
-			String current = start.getDoc();
+		ArrayList<Node> temp = sorter.returnPaths(1);
+		if(!temp.isEmpty()){
+			search.add(temp.get(0).getPath());
+			String current = temp.get(0).getDoc();
 			seen.add(current);
 			
 			boolean endSearch = false;
@@ -282,6 +281,5 @@ public class SearchEngine {
 		} else {
 			return null;
 		}
-		
 	}
 }

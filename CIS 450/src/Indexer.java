@@ -5,8 +5,8 @@ public class Indexer {
 	Indexer(){}
 	
 	static void add(String key, String value){
-		AmazonDynamoDB.newPair(key.toLowerCase(), value.toLowerCase());
-		AmazonDynamoDB.newReversePair(key.toLowerCase(), value.toLowerCase());
+		AmazonDynamoDB.newPair(key, value);
+		AmazonDynamoDB.newReversePair(key, value);
 	}
 	
 	static List<String> getIndex(String key){
