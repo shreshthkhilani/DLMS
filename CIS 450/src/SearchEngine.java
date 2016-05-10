@@ -250,32 +250,38 @@ public class SearchEngine {
 			String doc = docs.next();
 			sorter.addDoc(doc,rank.get(doc),merged.get(doc));
 		}
-		Node start = sorter.returnPaths(1).get(0);
-		search.add(start.getPath());
-		String current = start.getDoc();
-		seen.add(current);
-		
-		boolean endSearch = false;
-		while(!endSearch){
-			Map<String,Double> near = AmazonDynamoDB.linkQuery(querry,current);
-			LinkSorter sorter2 = new LinkSorter();
-			Iterator<String> documents = near.keySet().iterator(); 
-			while(documents.hasNext()){
-				String doc = documents.next();
-				sorter2.addDoc(doc,near.get(doc));
-			}
-			Iterator<Node> ranking = sorter2.returnPaths().iterator();
-			endSearch = true;
-			//determines hich document to hop to next
-			while(endSearch && ranking.hasNext()){
-				Node next = ranking.next();
-				if(!seen.contains(next.getDoc())){
-					current = next.getDoc();
-					search.add(sorter.returnDoc(current));
-					endSearch = false;
+		ArrayList<Node> temp= sorter.returnPaths(1);
+		if (!temp.isEmpty()){
+			Node start = temp.get(0);
+			search.add(start.getPath());
+			String current = start.getDoc();
+			seen.add(current);
+			
+			boolean endSearch = false;
+			while(!endSearch){
+				Map<String,Double> near = AmazonDynamoDB.linkQuery(querry,current);
+				LinkSorter sorter2 = new LinkSorter();
+				Iterator<String> documents = near.keySet().iterator(); 
+				while(documents.hasNext()){
+					String doc = documents.next();
+					sorter2.addDoc(doc,near.get(doc));
+				}
+				Iterator<Node> ranking = sorter2.returnPaths().iterator();
+				endSearch = true;
+				//determines hich document to hop to next
+				while(endSearch && ranking.hasNext()){
+					Node next = ranking.next();
+					if(!seen.contains(next.getDoc())){
+						current = next.getDoc();
+						search.add(sorter.returnDoc(current));
+						endSearch = false;
+					}
 				}
 			}
+			return search;
+		} else {
+			return null;
 		}
-		return search;
+		
 	}
 }

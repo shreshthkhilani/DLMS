@@ -14,6 +14,9 @@ public class JsonEncode {
 	JsonEncode(){}
 	
 	public static JsonObject encode(ArrayList<ArrayList<String[]>> results){
+		if(results == null){
+			return Json.createObjectBuilder().build();
+		}
 		ArrayList<JsonObject> nodeObj = new ArrayList<JsonObject>();
 		ArrayList<JsonObject> edgeObj = new ArrayList<JsonObject>();		
 		yposition = 0;
