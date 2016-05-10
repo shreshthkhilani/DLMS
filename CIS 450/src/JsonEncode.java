@@ -73,7 +73,7 @@ public class JsonEncode {
 		}
 		for(TreeNode child : node.getChildren()){
 			ans.addAll(nodeToJson(child,ypos,xposition));
-			xposition += child.getChildren().size();
+			xposition += 1;
 		}		
 		return ans;
 	}

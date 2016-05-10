@@ -8,8 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class SearchEngine {
+	static final int scale = 6;
+	static final int constant = 3;
 	static String user;
-	static Integer scale = 6;
 	static String querry;
 	
 	//initializes a search engine for a specific user
@@ -213,7 +214,6 @@ public class SearchEngine {
 	
 	//creates index ranks to be used in sort
 	static ArrayList<ArrayList<String[]>> rank(HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>> master){
-		int constant = 2;
 		HashMap<String, Double> rank = new HashMap<String,Double>();
 		HashMap<String, ArrayList<String[]>> merged = new HashMap<String, ArrayList<String[]>>();
 		Iterator<Integer> levels = master.keySet().iterator();
