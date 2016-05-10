@@ -1,12 +1,16 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class SearchEngine {
 	static String user;
+	static Integer scale = 6;
+	static String querry;
 	
 	SearchEngine(String user){
 		this.user = user;
@@ -14,6 +18,7 @@ public class SearchEngine {
 	
 	ArrayList<ArrayList<String[]>> search(String querry){
 		HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>> master = new HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>>();
+		this.querry = querry;
 		String[] tokens = querry.split(" ");
 		for(String token: tokens){
 			HashMap<String, ArrayList<HashMap<String, String>>> paths = rootPaths(token);
@@ -78,15 +83,17 @@ public class SearchEngine {
 			while(iter2.hasNext()){
 				String doc= iter2.next();
 				if(paths.containsKey(doc)){
-					ArrayList<ArrayList<String[]>> merged = mergePaths(established.get(doc),paths.get(doc));
-					established.remove(doc);
-					master.put(num, established);
-					HashMap<String, ArrayList<ArrayList<String[]>>> reformed = master.get(num+1);
-					if(reformed == null){
-						reformed = new HashMap<String, ArrayList<ArrayList<String[]>>>();
+					ArrayList<ArrayList<String[]>> merged = mergePaths(num, established.get(doc),paths.get(doc));
+					if(merged != null){
+						established.remove(doc);
+						master.put(num, established);
+						HashMap<String, ArrayList<ArrayList<String[]>>> reformed = master.get(num+1);
+						if(reformed == null){
+							reformed = new HashMap<String, ArrayList<ArrayList<String[]>>>();
+						}
+						reformed.put(doc, merged);
+						master.put(num+1, reformed);
 					}
-					reformed.put(doc, merged);
-					master.put(num+1, reformed);
 					paths.remove(doc);
 				}
 			}
@@ -119,7 +126,9 @@ public class SearchEngine {
 						pair[1] = map.get(key);
 						temp.add(pair);
 					}
-					channels2.add(temp);
+					if(temp != null){
+						channels2.add(temp);
+					}
 				}
 				recent.put(doc, channels2);
 			}
@@ -128,20 +137,24 @@ public class SearchEngine {
 		return master;
 	}
 	
-	static ArrayList<ArrayList<String[]>> mergePaths(ArrayList<ArrayList<String[]>> master, ArrayList<HashMap<String, String>> paths){
+	static ArrayList<ArrayList<String[]>> mergePaths(Integer num, ArrayList<ArrayList<String[]>> master, ArrayList<HashMap<String, String>> paths){
 		ArrayList<ArrayList<String[]>> new_master = new ArrayList<ArrayList<String[]>>();
 		while(!master.isEmpty()){
 			ArrayList<String[]> old_path = master.remove(0);
 			for(HashMap<String, String> new_path : paths){
-				ArrayList<String[]> combined = combine((ArrayList<String[]>) old_path.clone(),new_path);
-				new_master.add(combined);
+				ArrayList<String[]> combined = combine(num, (ArrayList<String[]>) old_path.clone(),new_path);
+				if(combined != null){
+					new_master.add(combined);
+				}
 			}
 		}
 		return new_master;
 	}
 	
-	static ArrayList<String[]> combine(ArrayList<String[]> old_path, HashMap<String, String> new_path){
+	static ArrayList<String[]> combine(Integer num, ArrayList<String[]> old_path, HashMap<String, String> new_path){
+		Integer length = (num+1)*scale;
 		Iterator<String> keys = new_path.keySet().iterator();
+		Integer size = old_path.size() + new_path.size();
 		while(keys.hasNext()){
 			String key = keys.next();
 			String[] entry = new String[2];
@@ -150,6 +163,7 @@ public class SearchEngine {
 			boolean flag = true;
 			for(String[] pair: old_path){
 				if(Arrays.equals(pair, entry)){
+					size = size - 2;
 					flag = false;
 				}
 			}
@@ -157,7 +171,11 @@ public class SearchEngine {
 				old_path.add(entry);
 			}
 		}
-		return old_path;
+		if(size > length){
+			return null;
+		} else {
+			return old_path;
+		}
 	}
 	
 	static ArrayList<String[]> combine2(ArrayList<String[]> old_path, ArrayList<String[]> new_path){
@@ -206,12 +224,39 @@ public class SearchEngine {
 	}
 	
 	static ArrayList<ArrayList<String[]>> sort(HashMap<String, Double> rank, HashMap<String, ArrayList<String[]>> merged){
+		ArrayList<ArrayList<String[]>> search = new ArrayList<ArrayList<String[]>>();
+		Set<String> seen = new HashSet<String>();
 		Sorter sorter = new Sorter();
 		Iterator<String> docs = rank.keySet().iterator(); 
 		while(docs.hasNext()){
 			String doc = docs.next();
 			sorter.addDoc(doc,rank.get(doc),merged.get(doc));
 		}
-		return sorter.returnPaths(10);
+		Node start = sorter.returnPaths(1).get(0);
+		search.add(start.path);
+		String current = start.doc;
+		seen.add(current);
+		
+		boolean endSearch = false;
+		while(!endSearch){
+			Map<String,Double> near = AmazonDynamoDB.linkQuery(querry,current);
+			Sorter2 sorter2 = new Sorter2();
+			Iterator<String> documents = near.keySet().iterator(); 
+			while(documents.hasNext()){
+				String doc = documents.next();
+				sorter2.addDoc(doc,near.get(doc));
+			}
+			Iterator<Node>  ranking = sorter2.returnPaths().iterator();
+			endSearch = true;
+			while(endSearch && ranking.hasNext()){
+				Node next = ranking.next();
+				if(!seen.contains(next.doc)){
+					current = next.doc;
+					search.add(sorter.returnDoc(current));
+					endSearch = false;
+				}
+			}
+		}
+		return search;
 	}
 }

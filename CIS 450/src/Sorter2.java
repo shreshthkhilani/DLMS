@@ -1,14 +1,14 @@
 import java.util.ArrayList;
 
-public class Sorter {
-	static Node start;
+public class Sorter2 {
+static Node start;
 	
-	Sorter(){
+	Sorter2(){
 		start = null;
 	}
 	
-	void addDoc(String doc, Double value, ArrayList<String[]> path){
-		Node node = new Node(doc,value,path);
+	void addDoc(String doc, Double rank){
+		Node node = new Node(doc,rank);
 		if(start ==  null){
 			start = node;
 		} else if(node.rank > start.rank){
@@ -30,14 +30,12 @@ public class Sorter {
 		}
 	}
 	
-	ArrayList<Node> returnPaths(int num){
+	ArrayList<Node> returnPaths(){
 		ArrayList<Node> paths = new ArrayList<Node>();
 		Node node = start;
-		int i = 0;
-		while(i < num && node != null){
+		while(node != null){
 			paths.add(node);
 			node = node.next;
-			i++;
 		}
 		return paths;
 	}

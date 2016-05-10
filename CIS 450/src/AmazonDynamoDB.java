@@ -49,6 +49,8 @@ import com.amazonaws.services.dynamodbv2.util.Tables;
 
 import info.debatty.java.stringsimilarity.NGram;
 
+//import info.debatty.java.stringsimilarity.NGram;
+
 /**
  * This sample demonstrates how to perform a few simple operations with the
  * Amazon DynamoDB service.
@@ -101,8 +103,8 @@ public class AmazonDynamoDB {
                     e);
         }
         dynamoDB = new AmazonDynamoDBClient(credentials);
-        Region usWest2 = Region.getRegion(Regions.US_WEST_2);
-        dynamoDB.setRegion(usWest2);
+        Region usEast1 = Region.getRegion(Regions.US_EAST_1);
+        dynamoDB.setRegion(usEast1);
         
     }
 
@@ -130,7 +132,7 @@ public class AmazonDynamoDB {
             }
             
             // Describe our new table
-            DescribeTableRequest describeTableRequest = new DescribeTableRequest().withTableName(linkertable);
+            DescribeTableRequest describeTableRequest = new DescribeTableRequest().withTableName(tableName);
             TableDescription tableDescription = dynamoDB.describeTable(describeTableRequest).getTable();
             System.out.println("Table Description: " + tableDescription);
             
@@ -157,7 +159,7 @@ public class AmazonDynamoDB {
             describeTableRequest = new DescribeTableRequest().withTableName(linkertable);
             tableDescription = dynamoDB.describeTable(describeTableRequest).getTable();
             System.out.println("Table Description: " + tableDescription);
-            
+
             tableName2 = "Reverse-Index";
 
             // Create table if it does not exist yet
