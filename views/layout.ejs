@@ -15,6 +15,7 @@
 
 	<link rel="stylesheet" type="text/css" href="/general.css">
 	<link rel="shortcut icon" href="/drop.png">
+	<script type="text/javascript" src="/navbar.js"></script>
 </head>
 <body>
 	<div id="all">
@@ -34,7 +35,7 @@
 							<div class="navitem">
 								<h3>
 									<small>
-										<a href="/home" class="navlink">
+										<a href="/home" class="navlink" id="homett" data-toggle="tooltip" data-placement="bottom" title="Home">
 											<span class="glyphicon glyphicon-home navglyph" aria-hidden="true"></span>
 										</a>
 									</small>
@@ -43,7 +44,7 @@
 							<div class="navitem">
 								<h3>
 									<small>
-										<a href="/upload" class="navlink">
+										<a href="/upload" class="navlink" id="uploadtt" data-toggle="tooltip" data-placement="bottom" title="Upload">
 											<span class="glyphicon glyphicon-upload navglyph" aria-hidden="true"></span>
 										</a>
 									</small>
@@ -52,7 +53,7 @@
 							<div class="navitem">
 								<h3>
 									<small>
-										<a href="/search" class="navlink">
+										<a href="/search" class="navlink" id="searchtt" data-toggle="tooltip" data-placement="bottom" title="Search">
 											<span class="glyphicon glyphicon-search navglyph" aria-hidden="true"></span>
 										</a>
 									</small>
@@ -61,7 +62,9 @@
 							<div class="navitem">
 								<h3>
 									<small>
-										<span class="glyphicon glyphicon-log-out navglyph" aria-hidden="true" id="logoutBtn"></span>
+										<div id="logouttt" data-toggle="tooltip" data-placement="bottom" title="Logout">
+											<span class="glyphicon glyphicon-log-out navglyph" aria-hidden="true" id="logoutBtn"></span>
+										</div>
 									</small>
 								</h3>
 							</div>

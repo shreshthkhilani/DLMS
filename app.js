@@ -22,6 +22,7 @@ var bcrypt = require('bcrypt');
 var nodemailer = require('nodemailer');
 var uuid = require('node-uuid');
 var shortid = require('shortid');
+var cmd = require('node-cmd');
 // var PythonShell = require('python-shell');
 app.engine('ejs', engine);
 app.set('views', path.join( __dirname, 'views'));
@@ -668,6 +669,72 @@ app.post('/addViewer', function (req, res) {
 	});
 });
 
+app.post('/search', function (req, res) {
+	var username = req.session.username;
+	var query = req.body.query;
+
+	// TODO: Search
+	// var command = 'java -jar search.jar ' + username + ' "' + query + '"';
+	// cmd.get(command, function () {
+	// 	var queryResult = JSON.parse(fs.readFileSync('json/query.json', 'utf8'));
+	// 	res.send({success: true, tree: queryResult});
+	// 	return;
+	// });
+	
+	var x = {
+	  "nodes": [
+	    {
+	      "id": "n0",
+	      "label": "A node",
+	      "x": 0,
+	      "y": 0,
+	      "size": 3
+	    },
+	    {
+	      "id": "n1",
+	      "label": "Another node",
+	      "x": 3,
+	      "y": 1,
+	      "size": 2
+	    },
+	    {
+	      "id": "n2",
+	      "label": "And a last one",
+	      "x": 1,
+	      "y": 3,
+	      "size": 1
+	    },
+	    {
+	      "id": "n3",
+	      "label": "blah",
+	      "x": 0,
+	      "y": 6,
+	      "size": 3
+	    }
+	  ],
+	  "edges": [
+	    {
+	      "id": "e0",
+	      "source": "n0",
+	      "target": "n1"
+	    },
+	    {
+	      "id": "e1",
+	      "source": "n1",
+	      "target": "n2"
+	    },
+	    {
+	      "id": "e2",
+	      "source": "n2",
+	      "target": "n0"
+	    }
+	  ]
+	};
+
+	res.send({success: true, tree: x});
+	return;
+});
+
 app.post('/uploadfile', function (req, res) {
 	var username = req.session.username;
 	var filename = req.body.filename;
@@ -746,6 +813,9 @@ app.post('/uploadfile', function (req, res) {
 									console.log('/uploadfile: Error 4');
 									console.log(err4);
 								} else {
+									// TODO: Extract file
+									// var command = 'java -jar extract.jar ' + k;
+									// cmd.run(command);
 									res.redirect('/home');
 									return;
 								}

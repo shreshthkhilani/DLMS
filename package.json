@@ -39,7 +39,8 @@
     "dynamodb": "*",
     "dateformat": "*",
     "bcrypt": "*",
-    "nodemailer": "*"
+    "nodemailer": "*",
+    "node-cmd": "*"
   },
   "author": "",
   "license": "",
