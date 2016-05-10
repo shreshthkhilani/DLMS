@@ -1,0 +1,17 @@
+App listening at http://localhost:8080
+/login: Error 1
+{ [CredentialsError: Missing credentials in config]
+  message: [Getter/Setter],
+  code: 'CredentialsError',
+  time: Tue May 10 2016 01:56:09 GMT+0000 (UTC),
+  originalError: 
+   { message: 'Could not load credentials from any providers',
+     code: 'CredentialsError',
+     time: Tue May 10 2016 01:56:09 GMT+0000 (UTC),
+     originalError: { message: 'Unexpected token <' } } }
+{ id: 'XJ_LPBzh-', viewer: 'deep' }
+App listening at http://localhost:8080
+5
+App listening at http://localhost:8080
+App listening at http://localhost:8080
+App listening at http://localhost:8080
