@@ -251,4 +251,84 @@ public class AmazonDynamoDB {
 	    	}
     	}
     }
+    
+    static void newLink(String key, String value) {
+       	Map<String, ArrayList<String>> list = new HashMap<String, ArrayList<String>>();
+    	List<String> docs = new ArrayList<String>();
+    	String keyword;
+    	
+    	ScanRequest scanRequest = new ScanRequest().withTableName(linkertable);
+    	ScanResult result = dynamoDB.scan(scanRequest);
+    	
+    	if(result.getItems().isEmpty()) {
+    		Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
+    		item.put("key", new AttributeValue(key.toLowerCase()));
+    		docs.add(value);
+    		item.put("docs", new AttributeValue(docs));
+    		PutItemRequest putItemRequest = new PutItemRequest(linkertable, item);
+    		PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
+    	}
+    	
+    	else {
+    		boolean found = false;
+    		for (Map<String, AttributeValue> item : result.getItems()) {
+	    		keyword = item.get("key").getS();
+	    		
+	    		if(keyword.equalsIgnoreCase(key)) {
+	    			docs = item.get("docs").getSS();
+	    			docs.add(value);
+	    			
+	    			Map<String, AttributeValue> same_key = new HashMap<String, AttributeValue>();
+	    			same_key.put("key", new AttributeValue(keyword));
+	    			Map<String, AttributeValueUpdate> new_value = new HashMap<String, AttributeValueUpdate>();
+	    			new_value.put("docs", new AttributeValueUpdate(new AttributeValue(docs), "put"));
+	    			UpdateItemRequest update = new UpdateItemRequest(linkertable, same_key, new_value);
+	    			found = true;
+	    		}
+    		}
+	    	if(found = false) {
+    			docs.add(value);
+    			Map<String, AttributeValue> new_item = new HashMap<String, AttributeValue>();
+    			new_item.put("key", new AttributeValue(key.toLowerCase()));
+    			new_item.put("docs", new AttributeValue(docs));
+    			PutItemRequest putItemRequest = new PutItemRequest(linkertable, new_item);
+    			PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
+    		}
+    	}
+    }
+    
+    static Map<String, Double> linkQuery(String key, String doc) {
+    	Map<String, Double> results = new HashMap<String, Double>();
+    	List<String> docs = new ArrayList<String>();
+    	String keyword;
+    	
+    	ScanRequest scanRequest = new ScanRequest().withTableName(linkertable);
+    	ScanResult result = dynamoDB.scan(scanRequest);
+    	
+    	for (Map<String, AttributeValue> item : result.getItems()){
+    		keyword = item.get("key").getS();
+    		docs = item.get("docs").getSS();
+    		
+    		NGram ngram = new NGram();
+    		
+    		double n = ngram.distance(key, keyword);
+    		
+    		if (docs.contains(doc)) {
+    			for(String d : docs) {
+    				if(!(d.equalsIgnoreCase(doc))) {
+    					if(results.containsKey(d)) {
+    						double temp = results.get(d);
+    						temp += n;
+    						results.put(d, temp);
+    					}
+    					else {
+    						results.put(d, n);
+    					}
+    				}
+    				else continue;
+    			}
+    		}
+    	}
+    	return results;
+    }
 }
