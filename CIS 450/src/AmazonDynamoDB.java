@@ -238,7 +238,7 @@ public class AmazonDynamoDB {
         
         if(result.getItems().isEmpty()) {
             Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
-            item.put("key", new AttributeValue(key.toLowerCase()));
+            item.put("keyname", new AttributeValue(key.toLowerCase()));
             docs.add(value);
             item.put("docs", new AttributeValue(docs));
             PutItemRequest putItemRequest = new PutItemRequest(linkertable, item);
@@ -249,18 +249,17 @@ public class AmazonDynamoDB {
         else {
             boolean found = false;
             for (Map<String, AttributeValue> item : result.getItems()) {
-                keyword = item.get("key").getS();
+                keyword = item.get("keyname").getS();
                 
                 if(keyword.equalsIgnoreCase(key)) {
                     docs = item.get("docs").getSS();
                     docs.add(value);
                     
                     Map<String, AttributeValue> same_key = new HashMap<String, AttributeValue>();
-                    same_key.put("key", new AttributeValue(keyword));
-                    Map<String, AttributeValueUpdate> new_value = new HashMap<String, AttributeValueUpdate>();
-                    new_value.put("docs", new AttributeValueUpdate(new AttributeValue(docs), "put"));
-                    UpdateItemRequest update = new UpdateItemRequest(linkertable, same_key, new_value);
-                    
+                    same_key.put("keyname", new AttributeValue(keyword));
+                    same_key.put("docs", new AttributeValue(docs));
+                    PutItemRequest putItemRequest = new PutItemRequest(linkertable, same_key);
+                    PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
                     found = true;
            
                 }
@@ -268,7 +267,7 @@ public class AmazonDynamoDB {
             if(found = false) {
                 docs.add(value);
                 Map<String, AttributeValue> new_item = new HashMap<String, AttributeValue>();
-                new_item.put("key", new AttributeValue(key.toLowerCase()));
+                new_item.put("keyname", new AttributeValue(key.toLowerCase()));
                 new_item.put("docs", new AttributeValue(docs));
                 PutItemRequest putItemRequest = new PutItemRequest(linkertable, new_item);
                 PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
@@ -286,7 +285,7 @@ public class AmazonDynamoDB {
         ScanResult result = dynamoDB.scan(scanRequest);
         
         for (Map<String, AttributeValue> item : result.getItems()){
-            keyword = item.get("key").getS();
+            keyword = item.get("keyname").getS();
             docs = item.get("docs").getSS();
             
             NGram ngram = new NGram();
