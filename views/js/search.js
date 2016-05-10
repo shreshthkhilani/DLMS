@@ -9,6 +9,7 @@ $( document ).ready(function () {
 		};
 		$.post('/search', jsonData, function (data) {
 			if (data.success) {
+				$('#searchresults').empty();
 				var s = new sigma(
 					{ 
 				    graph: data.tree,
