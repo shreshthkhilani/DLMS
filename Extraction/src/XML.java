@@ -27,7 +27,9 @@ public class XML {
 
     Document doc = factory.newDocumentBuilder().parse(new File(filename));
     
-    THEFUAK = filename;
+    
+    THEFUAK = "m1VvSd4h-";
+    
     
 //    XPathFactory xpf = XPathFactory.newInstance();
 //    XPath xp = xpf.newXPath();
@@ -47,6 +49,7 @@ public class XML {
 
 public static void visit(Node node, int level, String p, int ctr) {
 	String h, c = null;	
+	node.normalize();
     NodeList list = node.getChildNodes();
     for (int i = 0; i < list.getLength(); i++) {
     	Node childNode = list.item(i);
@@ -54,9 +57,7 @@ public static void visit(Node node, int level, String p, int ctr) {
     	h = childNode.getNodeName();
     	c = childNode.getNodeValue();
     	
-    	
-
-    	
+    	 	
     	if(c == null) {
     		if(childNode.getFirstChild() != null) {
     			c = childNode.getFirstChild().getNodeValue();
@@ -90,14 +91,14 @@ public static void visit(Node node, int level, String p, int ctr) {
     				c = THEFUAK + "." + c;
     				h = THEFUAK + "." +ctr + "elt" + level + "." + h;
     			}
-    			else if (childNode.hasChildNodes()){
+    			else if (childNode.getFirstChild().hasChildNodes()){
     				h = THEFUAK + "." + ctr + "elt" + level + "." + h;
     				c = THEFUAK + "." + ctr + "elt" + level + "." + c;
     				
     			}
     			System.out.println(c + ", " + h);
-    			Indexer.add(c.toLowerCase().trim(), h.toLowerCase().trim());
-				Linker.add(c.toLowerCase().trim(), h.toLowerCase().trim());
+    			Indexer.add(c.trim(), h.trim());
+				Linker.add(c.trim(), h.trim());
     			p = h;
     		} else {
     			//if (childNode.getParentNode().getParentNode().getParentNode().getParentNode().getNodeName() == null) System.out.println("new");
@@ -113,14 +114,20 @@ public static void visit(Node node, int level, String p, int ctr) {
     			}
     			else if (childNode.hasChildNodes()){
     				h = THEFUAK + "." + ctr + "elt" + level + "." + h;
-    				c = THEFUAK + "." + ctr + "elt" + level + "." + c;
+//    				c = THEFUAK + "." + ctr + "elt" + level + "." + c;
+//    				System.out.println(childNode.getFirstChild().getNodeName());
+//    				System.out.println(childNode.getFirstChild().getNodeValue());
+    			} else {
+    				System.out.println("no kids divorced sad life");
     			}
+//    			System.out.println(childNode.getFirstChild().hasChildNodes());
+//    			System.out.println(c);
     			System.out.println(h + ", " + c);
-    			Indexer.add(c.toLowerCase().trim(), h.toLowerCase().trim());
-				Linker.add(c.toLowerCase().trim(), h.toLowerCase().trim());
+    			Indexer.add(c.trim(), h.trim());
+				Linker.add(c.trim(), h.trim());
     			if (p != null) {
-    				Indexer.add(p.toLowerCase(), h.toLowerCase());
-    				Linker.add(p.toLowerCase(), h.toLowerCase());
+    				Indexer.add(p.trim(), h.trim());
+    				Linker.add(p.trim(), h.trim());
     				System.out.println(p + ", " + h);
     			}
     			//System.out.println(level);

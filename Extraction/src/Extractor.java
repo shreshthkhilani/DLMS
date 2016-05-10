@@ -8,6 +8,7 @@ public class Extractor {
 	public static void main(String args[]) throws Exception {
 		AmazonDynamoDB.createTable();
 		
+		
 	    if(args[0] == null)
 	    {
 	        System.out.println("Proper Usage is: java program filename");
