@@ -2,14 +2,21 @@ import java.util.ArrayList;
 
 public class Node {
 	String doc;
-	Double value;
+	Double rank;
 	ArrayList<String[]> path;
 	Node next;
 	
-	Node(String doc, Double value, ArrayList<String[]> path){
+	Node(String doc, Double rank, ArrayList<String[]> path){
 		this.doc = doc;
-		this.value = value;
+		this.rank = rank;
 		this.path = path;
+		next = null;
+	}
+	
+	Node(String doc, Double rank){
+		this.doc = doc;
+		this.rank = rank;
+		this.path = null;
 		next = null;
 	}
 }

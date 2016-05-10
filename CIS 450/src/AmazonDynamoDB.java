@@ -24,8 +24,12 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
@@ -39,7 +43,13 @@ import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
+import com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
+import com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
 import com.amazonaws.services.dynamodbv2.util.Tables;
+
+import info.debatty.java.stringsimilarity.NGram;
+
+//import info.debatty.java.stringsimilarity.NGram;
 
 /**
  * This sample demonstrates how to perform a few simple operations with the
@@ -63,7 +73,8 @@ public class AmazonDynamoDB {
     static AmazonDynamoDBClient dynamoDB;
     static String tableName;
     static String tableName2;
-
+    static String linkertable;
+    
     /**
      * The only information needed to create a client are security credentials
      * consisting of the AWS Access Key ID and Secret Access Key. All other
@@ -94,6 +105,7 @@ public class AmazonDynamoDB {
         dynamoDB = new AmazonDynamoDBClient(credentials);
         Region usEast1 = Region.getRegion(Regions.US_EAST_1);
         dynamoDB.setRegion(usEast1);
+        
     }
 
     public static void createTable() throws Exception {
@@ -118,12 +130,36 @@ public class AmazonDynamoDB {
                 System.out.println("Waiting for " + tableName + " to become ACTIVE...");
                 Tables.awaitTableToBecomeActive(dynamoDB, tableName);
             }
-
+            
             // Describe our new table
             DescribeTableRequest describeTableRequest = new DescribeTableRequest().withTableName(tableName);
             TableDescription tableDescription = dynamoDB.describeTable(describeTableRequest).getTable();
             System.out.println("Table Description: " + tableDescription);
             
+            linkertable = "Links";
+
+            // Create table if it does not exist yet
+            if (Tables.doesTableExist(dynamoDB, linkertable)) {
+                System.out.println("Table " + linkertable + " is already ACTIVE");
+            } else {
+                // Create a table with a primary hash key named 'name', which holds a string
+                CreateTableRequest createTableRequest = new CreateTableRequest().withTableName(linkertable)
+                    .withKeySchema(new KeySchemaElement().withAttributeName("keyname").withKeyType(KeyType.HASH))
+                    .withAttributeDefinitions(new AttributeDefinition().withAttributeName("keyname").withAttributeType(ScalarAttributeType.S))
+                    .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(1L).withWriteCapacityUnits(1L));
+                    TableDescription createdTableDescription = dynamoDB.createTable(createTableRequest).getTableDescription();
+                System.out.println("Created Table: " + createdTableDescription);
+
+                // Wait for it to become active
+                System.out.println("Waiting for " + linkertable + " to become ACTIVE...");
+                Tables.awaitTableToBecomeActive(dynamoDB, linkertable);
+            }
+
+            // Describe our new table
+            describeTableRequest = new DescribeTableRequest().withTableName(linkertable);
+            tableDescription = dynamoDB.describeTable(describeTableRequest).getTable();
+            System.out.println("Table Description: " + tableDescription);
+
             tableName2 = "Reverse-Index";
 
             // Create table if it does not exist yet
@@ -165,11 +201,11 @@ public class AmazonDynamoDB {
     }
 
     static void newPair(String key, String value) {
-    	List<String> values = values(key);
-    	if(values == null){
-    		values = new ArrayList<String>();
-    	}
-    	values.add(value);
+        List<String> values = values(key);
+        if(values == null){
+            values = new ArrayList<String>();
+        }
+        values.add(value);
         Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
         item.put("keyname", new AttributeValue(key));
         item.put("valuenames", new AttributeValue(values));
@@ -178,11 +214,11 @@ public class AmazonDynamoDB {
     }
     
     static void newReversePair(String key, String value) {
-    	List<String> keys = reverseValues(value);
-    	if(keys == null){
-    		keys = new ArrayList<String>();
-    	}
-    	keys.add(key);
+        List<String> keys = reverseValues(value);
+        if(keys == null){
+            keys = new ArrayList<String>();
+        }
+        keys.add(key);
         Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
         item.put("valuename", new AttributeValue(value));
         item.put("keynames", new AttributeValue(keys));
@@ -190,56 +226,143 @@ public class AmazonDynamoDB {
         PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
     }
     
+    static void newLink(String key, String value) {
+                
+        Map<String, ArrayList<String>> list = new HashMap<String, ArrayList<String>>();
+        List<String> docs = new ArrayList<String>();
+        String keyword;
+        
+        ScanRequest scanRequest = new ScanRequest().withTableName(linkertable);
+        
+        ScanResult result = dynamoDB.scan(scanRequest);
+        
+        if(result.getItems().isEmpty()) {
+            Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
+            item.put("key", new AttributeValue(key.toLowerCase()));
+            docs.add(value);
+            item.put("docs", new AttributeValue(docs));
+            PutItemRequest putItemRequest = new PutItemRequest(linkertable, item);
+            PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
+            
+        }
+        
+        else {
+            boolean found = false;
+            for (Map<String, AttributeValue> item : result.getItems()) {
+                keyword = item.get("key").getS();
+                
+                if(keyword.equalsIgnoreCase(key)) {
+                    docs = item.get("docs").getSS();
+                    docs.add(value);
+                    
+                    Map<String, AttributeValue> same_key = new HashMap<String, AttributeValue>();
+                    same_key.put("key", new AttributeValue(keyword));
+                    Map<String, AttributeValueUpdate> new_value = new HashMap<String, AttributeValueUpdate>();
+                    new_value.put("docs", new AttributeValueUpdate(new AttributeValue(docs), "put"));
+                    UpdateItemRequest update = new UpdateItemRequest(linkertable, same_key, new_value);
+                    
+                    found = true;
+           
+                }
+            }
+            if(found = false) {
+                docs.add(value);
+                Map<String, AttributeValue> new_item = new HashMap<String, AttributeValue>();
+                new_item.put("key", new AttributeValue(key.toLowerCase()));
+                new_item.put("docs", new AttributeValue(docs));
+                PutItemRequest putItemRequest = new PutItemRequest(linkertable, new_item);
+                PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
+            }
+        }
+    }
+    
+    static Map<String, Double> linkQuery(String key, String doc) {
+        Map<String, Double> results = new HashMap<String, Double>();
+        List<String> docs = new ArrayList<String>();
+        String keyword;
+                
+        ScanRequest scanRequest = new ScanRequest().withTableName(linkertable);
+                
+        ScanResult result = dynamoDB.scan(scanRequest);
+        
+        for (Map<String, AttributeValue> item : result.getItems()){
+            keyword = item.get("key").getS();
+            docs = item.get("docs").getSS();
+            
+            NGram ngram = new NGram();
+            
+            double n = ngram.distance(key, keyword);
+            
+            if (docs.contains(doc)) {
+                for(String d : docs) {
+                    if(!(d.equalsIgnoreCase(doc))) {
+                        if(results.containsKey(d)) {
+                            double temp = results.get(d);
+                            temp += n;
+                            results.put(d, temp);
+                        }
+                        else {
+                            results.put(d, n);
+                        }
+                    }
+                    else continue;
+                }
+            }      
+        }
+        return results;
+    }
+        
+    
     static List<String> values(String key){
-    	List<String> list = new ArrayList<String>();
-    	
-    	Map<String, AttributeValue> expressionAttributeValues = new HashMap<String, AttributeValue>();
-    	expressionAttributeValues.put(":key", new AttributeValue().withS(key));
-    	ScanRequest scanRequest = new ScanRequest()
-    		    .withTableName(tableName)
-    		    .withFilterExpression("keyname = :key")
-    		    .withProjectionExpression("valuenames")
-    		    .withExpressionAttributeValues(expressionAttributeValues);
-    	ScanResult result = dynamoDB.scan(scanRequest);
-    	for (Map<String, AttributeValue> item : result.getItems()) {
-    	    list = item.get("valuenames").getSS();
-    	}
-		return list;
+        List<String> list = new ArrayList<String>();
+        
+        Map<String, AttributeValue> expressionAttributeValues = new HashMap<String, AttributeValue>();
+        expressionAttributeValues.put(":key", new AttributeValue().withS(key));
+        ScanRequest scanRequest = new ScanRequest()
+                .withTableName(tableName)
+                .withFilterExpression("keyname = :key")
+                .withProjectionExpression("valuenames")
+                .withExpressionAttributeValues(expressionAttributeValues);
+        ScanResult result = dynamoDB.scan(scanRequest);
+        for (Map<String, AttributeValue> item : result.getItems()) {
+            list = item.get("valuenames").getSS();
+        }
+        return list;
     }
 
     static List<String> reverseValues(String key){
-    	List<String> list = new ArrayList<String>();
-    	
-    	Map<String, AttributeValue> expressionAttributeValues = new HashMap<String, AttributeValue>();
-    	expressionAttributeValues.put(":value", new AttributeValue().withS(key));
-    	ScanRequest scanRequest = new ScanRequest()
-    		    .withTableName(tableName2)
-    		    .withFilterExpression("valuename = :value")
-    		    .withProjectionExpression("keynames")
-    		    .withExpressionAttributeValues(expressionAttributeValues);
-    	ScanResult result = dynamoDB.scan(scanRequest);
-    	for (Map<String, AttributeValue> item : result.getItems()) {
-    	    list = item.get("keynames").getSS();
-    	}
-		return list;
+        List<String> list = new ArrayList<String>();
+        
+        Map<String, AttributeValue> expressionAttributeValues = new HashMap<String, AttributeValue>();
+        expressionAttributeValues.put(":value", new AttributeValue().withS(key));
+        ScanRequest scanRequest = new ScanRequest()
+                .withTableName(tableName2)
+                .withFilterExpression("valuename = :value")
+                .withProjectionExpression("keynames")
+                .withExpressionAttributeValues(expressionAttributeValues);
+        ScanResult result = dynamoDB.scan(scanRequest);
+        for (Map<String, AttributeValue> item : result.getItems()) {
+            list = item.get("keynames").getSS();
+        }
+        return list;
     }
     
     static boolean returnPermission(String user, String id){
-    	List<String> list = new ArrayList<String>();
-    	String access = null;
-    	
-    	Map<String, AttributeValue> expressionAttributeValues = new HashMap<String, AttributeValue>();
-    	expressionAttributeValues.put(":id", new AttributeValue().withS(id));
-    	ScanRequest scanRequest = new ScanRequest()
-    		    .withTableName("dataitems")
-    		    .withFilterExpression("id = :id")
-    		    .withProjectionExpression("isPub, viewers")
-    		    .withExpressionAttributeValues(expressionAttributeValues);
-    	ScanResult result = dynamoDB.scan(scanRequest);
-    	List<Map<String, AttributeValue>> results = result.getItems();
-    	if(results.isEmpty()){
-    		return false;
-    	} else {
+	 	List<String> list = new ArrayList<String>();
+	 	String access = null;
+	 	
+	 	Map<String, AttributeValue> expressionAttributeValues = new HashMap<String, AttributeValue>();
+	 	expressionAttributeValues.put(":id", new AttributeValue().withS(id));
+	 	ScanRequest scanRequest = new ScanRequest()
+	 		    .withTableName("dataitems")
+	 		    .withFilterExpression("id = :id")
+	 		    .withProjectionExpression("isPub, viewers")
+	 		    .withExpressionAttributeValues(expressionAttributeValues);
+	 	ScanResult result = dynamoDB.scan(scanRequest);
+	 	List<Map<String, AttributeValue>> results = result.getItems();
+	 	if(results.isEmpty()){
+	 		return false;
+	 	} else {
 	    	for (Map<String, AttributeValue> item : result.getItems()) {
 	    	    list = item.get("viewers").getSS();
 	    	    access = item.get("isPub").getN();
@@ -249,86 +372,6 @@ public class AmazonDynamoDB {
 	    	} else {
 	    		return false;
 	    	}
-    	}
-    }
-    
-    static void newLink(String key, String value) {
-       	Map<String, ArrayList<String>> list = new HashMap<String, ArrayList<String>>();
-    	List<String> docs = new ArrayList<String>();
-    	String keyword;
-    	
-    	ScanRequest scanRequest = new ScanRequest().withTableName(linkertable);
-    	ScanResult result = dynamoDB.scan(scanRequest);
-    	
-    	if(result.getItems().isEmpty()) {
-    		Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
-    		item.put("key", new AttributeValue(key.toLowerCase()));
-    		docs.add(value);
-    		item.put("docs", new AttributeValue(docs));
-    		PutItemRequest putItemRequest = new PutItemRequest(linkertable, item);
-    		PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
-    	}
-    	
-    	else {
-    		boolean found = false;
-    		for (Map<String, AttributeValue> item : result.getItems()) {
-	    		keyword = item.get("key").getS();
-	    		
-	    		if(keyword.equalsIgnoreCase(key)) {
-	    			docs = item.get("docs").getSS();
-	    			docs.add(value);
-	    			
-	    			Map<String, AttributeValue> same_key = new HashMap<String, AttributeValue>();
-	    			same_key.put("key", new AttributeValue(keyword));
-	    			Map<String, AttributeValueUpdate> new_value = new HashMap<String, AttributeValueUpdate>();
-	    			new_value.put("docs", new AttributeValueUpdate(new AttributeValue(docs), "put"));
-	    			UpdateItemRequest update = new UpdateItemRequest(linkertable, same_key, new_value);
-	    			found = true;
-	    		}
-    		}
-	    	if(found = false) {
-    			docs.add(value);
-    			Map<String, AttributeValue> new_item = new HashMap<String, AttributeValue>();
-    			new_item.put("key", new AttributeValue(key.toLowerCase()));
-    			new_item.put("docs", new AttributeValue(docs));
-    			PutItemRequest putItemRequest = new PutItemRequest(linkertable, new_item);
-    			PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
-    		}
-    	}
-    }
-    
-    static Map<String, Double> linkQuery(String key, String doc) {
-    	Map<String, Double> results = new HashMap<String, Double>();
-    	List<String> docs = new ArrayList<String>();
-    	String keyword;
-    	
-    	ScanRequest scanRequest = new ScanRequest().withTableName(linkertable);
-    	ScanResult result = dynamoDB.scan(scanRequest);
-    	
-    	for (Map<String, AttributeValue> item : result.getItems()){
-    		keyword = item.get("key").getS();
-    		docs = item.get("docs").getSS();
-    		
-    		NGram ngram = new NGram();
-    		
-    		double n = ngram.distance(key, keyword);
-    		
-    		if (docs.contains(doc)) {
-    			for(String d : docs) {
-    				if(!(d.equalsIgnoreCase(doc))) {
-    					if(results.containsKey(d)) {
-    						double temp = results.get(d);
-    						temp += n;
-    						results.put(d, temp);
-    					}
-    					else {
-    						results.put(d, n);
-    					}
-    				}
-    				else continue;
-    			}
-    		}
-    	}
-    	return results;
+	 	}
     }
 }

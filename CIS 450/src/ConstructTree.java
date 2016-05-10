@@ -6,11 +6,15 @@ public class ConstructTree {
 		head = null;
 	}
 	
-	boolean addNode(String[] pair){	
-		TreeNode key = new TreeNode(pair[0]);
-		TreeNode value = new TreeNode(pair[1]);
+	boolean addNode(String[] pair){
+		TreeNode key = new TreeNode(pair[1]);
+		TreeNode value = new TreeNode(pair[0]);
 		key.addChild(value);
 		if(head == null){
+			head = key;
+			return true;
+		} else if (value.key.equals(head.key)){
+			key.addChild(head);
 			head = key;
 			return true;
 		} else {
@@ -19,7 +23,7 @@ public class ConstructTree {
 	}
 	
 	boolean add(TreeNode node,TreeNode current){
-		if(current.key == node.key){
+		if(current.key.equals(node.key)){
 			current.children.add(node.getChildren().get(0));
 			return true;
 		} else {

@@ -11,7 +11,7 @@ public class Sorter {
 		Node node = new Node(doc,value,path);
 		if(start ==  null){
 			start = node;
-		} else if(node.value > start.value){
+		} else if(node.rank > start.rank){
 			node.next = start;
 			start = node;
 		} else {
@@ -20,7 +20,7 @@ public class Sorter {
 	}
 	
 	void place(Node node, Node current){
-		if(node.value > current.value || node.value == current.value){
+		if(node.rank > current.rank || node.rank == current.rank){
 			node.next = current.next;
 			current.next = node;
 		} else if(current.next == null){
@@ -30,15 +30,28 @@ public class Sorter {
 		}
 	}
 	
-	ArrayList<ArrayList<String[]>> returnPaths(int num){
-		ArrayList<ArrayList<String[]>> paths = new ArrayList<ArrayList<String[]>>();
+	ArrayList<Node> returnPaths(int num){
+		ArrayList<Node> paths = new ArrayList<Node>();
 		Node node = start;
 		int i = 0;
 		while(i < num && node != null){
-			paths.add(node.path);
+			paths.add(node);
 			node = node.next;
 			i++;
 		}
 		return paths;
+	}
+	
+	ArrayList<String[]> returnDoc(String doc){
+		Node node = start;
+		return traverse(doc,start);	
+	}
+	
+	ArrayList<String[]> traverse(String doc, Node node){
+		if(node.doc.equals(doc)){
+			return node.path;
+		} else {
+			return traverse(doc, node.next);
+		}	
 	}
 }

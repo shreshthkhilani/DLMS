@@ -9,6 +9,7 @@ import javax.json.JsonObject;
 public class JsonEncode {
 	static Integer yposition;
 	static Integer edge;
+	static Integer id;
 	
 	JsonEncode(){}
 	
@@ -16,15 +17,17 @@ public class JsonEncode {
 		ArrayList<JsonObject> nodeObj = new ArrayList<JsonObject>();
 		ArrayList<JsonObject> edgeObj = new ArrayList<JsonObject>();
 		
-		for(ArrayList<String[]> tree: results){
-			ConstructTree con = new ConstructTree();
-			Iterator<String[]> nodes = tree.iterator();
-			while(nodes.hasNext()){
-				String[] node = nodes.next();
-				con.addNode(node);
-			}
 		yposition = 0;
 		edge = 0;
+		id = 0;
+		for(ArrayList<String[]> tree: results){
+			ConstructTree con = new ConstructTree();
+			while(!tree.isEmpty()){
+				String[] node = tree.remove(0);
+				if(!con.addNode(node)){
+					tree.add(node);
+				}
+			}
 		nodeObj.addAll(nodeToJson(con.getHead(),0));
 		edgeObj.addAll(edgeToJson(con.getHead()));
 		}
@@ -49,15 +52,17 @@ public class JsonEncode {
 	static ArrayList<JsonObject> nodeToJson(TreeNode node, int xposition){
 		ArrayList<JsonObject> ans = new ArrayList<JsonObject>();
 		JsonObject obj = Json.createObjectBuilder()
-				.add("id", node.getkey())
+				.add("id", "n"+Integer.toString(id))
 				.add("label", node.getkey())
 				.add("x", xposition)
 				.add("y", yposition)
 				.add("size", 1)
 				.build();
+		node.setId(id);
+		id++;
 		ans.add(obj);
-		xposition = 0;
 		yposition++;
+		xposition = 0;
 		for(TreeNode child : node.getChildren()){
 			ans.addAll(nodeToJson(child,xposition));
 			xposition += child.getChildren().size();
@@ -69,12 +74,13 @@ public class JsonEncode {
 		ArrayList<JsonObject> ans = new ArrayList<JsonObject>();
 		for(TreeNode child : node.getChildren()){
 			JsonObject obj = Json.createObjectBuilder()
-					.add("id", edge)
-					.add("source", node.key)
-					.add("target", child.key)
+					.add("id", "e"+Integer.toString(edge))
+					.add("source", node.getId())
+					.add("target", child.getId())
 					.build();
 			ans.add(obj);
 			edge++;
+			ans.addAll(edgeToJson(child));
 		}
 		return ans;
 	}

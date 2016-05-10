@@ -4,6 +4,7 @@ import javax.json.JsonObject;
 
 public class Executable {
 	public static void main(String[] args) throws Exception {
+		AmazonDynamoDB.createTable();
 		if(args.length != 2){
 			System.out.println("invalid number of arguments");
 		} else {
