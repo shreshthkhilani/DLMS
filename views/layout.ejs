@@ -19,11 +19,55 @@
 <body>
 	<div id="all">
 		<div id="notFooter">
-			<div class="container" id="header" align="center">
-				<a href="/"><img src="/drop.png" style="height:42px; margin-top: 16px;"></a>
-				<h3>
-					<small>Data Lake Management Service</small>
-				</h3>
+			<div class="container" id="header">
+				<div class="row">
+					<div class="col-sm-1 col-xs-3">
+						<a href="/"><img src="/drop.png" style="height:42px; margin-top: 12px;"></a>
+					</div>
+					<div class="col-sm-5 col-xs-9">
+						<h3>
+							<small>Data Lake Management Service</small>
+						</h3>
+					</div>
+					<div class="col-sm-6 col-xs-12" align="right">
+						<% if (login) { %>
+							<div class="navitem">
+								<h3>
+									<small>
+										<a href="/home" class="navlink">
+											<span class="glyphicon glyphicon-home navglyph" aria-hidden="true"></span>
+										</a>
+									</small>
+								</h3>
+							</div>
+							<div class="navitem">
+								<h3>
+									<small>
+										<a href="/upload" class="navlink">
+											<span class="glyphicon glyphicon-upload navglyph" aria-hidden="true"></span>
+										</a>
+									</small>
+								</h3>
+							</div>
+							<div class="navitem">
+								<h3>
+									<small>
+										<a href="/search" class="navlink">
+											<span class="glyphicon glyphicon-search navglyph" aria-hidden="true"></span>
+										</a>
+									</small>
+								</h3>
+							</div>
+							<div class="navitem">
+								<h3>
+									<small>
+										<span class="glyphicon glyphicon-log-out navglyph" aria-hidden="true" id="logoutBtn"></span>
+									</small>
+								</h3>
+							</div>
+						<% } %>
+					</div>
+				</div>
 			</div>
 			<%- body %>
 		</div>

@@ -1,0 +1,35 @@
+<% layout( 'layout' ) -%>
+
+<div class="container" align="center">
+	<br>
+	<p>Upload raw files to the DLMS here.</p>
+</div>
+<br>
+<div class="container">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Filename</th>
+				<th>Filetype</th>
+				<th>File</th>
+				<th>Upload</th>
+			</tr>
+		</thead>
+		<tbody>
+			<form role="form" action="/uploadfile" method="post" enctype="multipart/form-data" onerror="window.location='/home'" id="photoForm">
+				<td>
+					<input type="text" id="nameInput" name="filename" class="form-control">
+				</td>
+				<td>
+					<input type="text" id="typeInput" name="filetype" class="form-control">
+				</td>
+				<td>
+					<input type="file" id="fileInput" name="photo">
+				</td>
+				<td>
+					<input class="dlmsBtn" type="submit" value="Submit" id="submitPhotoBtn">
+				</td>
+			</form>
+		</tbody>
+	</table>
+</div>

@@ -15,12 +15,13 @@ var async = require('async');
 var assert = require('assert');
 var secretObj = JSON.parse(fs.readFileSync('json/secret.json', 'utf8'));
 // var mysqlObj = JSON.parse(fs.readFileSync('json/mysqldb.json', 'utf8'));
-// var awsObj = JSON.parse(fs.readFileSync('json/aws.json', 'utf8'));
+var awsObj = JSON.parse(fs.readFileSync('json/aws.json', 'utf8'));
 // var emailObj = JSON.parse(fs.readFileSync('json/email.json', 'utf8'));
 var dateFormat = require('dateformat');
 var bcrypt = require('bcrypt');
 var nodemailer = require('nodemailer');
 var uuid = require('node-uuid');
+var shortid = require('shortid');
 // var PythonShell = require('python-shell');
 app.engine('ejs', engine);
 app.set('views', path.join( __dirname, 'views'));
@@ -128,9 +129,165 @@ app.get('/home', function (req, res) {
 		res.redirect('/');
 		return;
 	}
+	var username = req.session.username;
 
-	var t = 'Home';
-  res.render('home', { 
+	var params1 = {
+		Key : {
+			username : {
+				S : username
+			}
+		},
+		TableName: 'users'
+	};
+
+	dynamodb.getItem(params1, function (err1, data1) {
+	  if (err1) {
+	  	console.log('/home: Error 1');
+	  	console.log(err1);
+	  } else { 
+	  	var dataitems = [];
+	  	var getDataItems = function(it, callback) {
+	  		var params3 = {
+	  			Key : {
+						id : {
+							S : it
+						}
+					},
+					TableName: 'dataitems'
+	  		};
+	  		dynamodb.getItem(params3, function (err3, data3) {
+				  if (err3) {
+				  	console.log('/home: Error 3');
+				  	console.log(err3);
+				  } else { 
+				  	var ditem = {};
+				  	ditem.id = data3.Item.id.S;
+				  	ditem.url = data3.Item.url.S;
+				  	ditem.type = data3.Item.type.S;
+				  	ditem.name = data3.Item.name.S;
+	  				ditem.isPub = data3.Item.isPub.N;
+				  	if (data3.Item.owner.S === username) {
+					  	ditem.owner = data3.Item.owner.S;
+					  } else {
+					  	ditem.owner = data3.Item.owner.S;
+					  }
+					  ditem.info = '/dataitem/' + data3.Item.id.S;
+				  	dataitems.push(ditem);
+				  	callback();
+				  }
+				});
+	  	};
+	  	var itemlist = [];
+	  	if (data1.Item.dataitems === undefined) {
+	  		itemlist = [];
+	  	} else {
+	  		itemlist = data1.Item.dataitems.SS;
+	  	}
+	  	async.each(itemlist, getDataItems, function (err2) {
+	  		if (err2) {
+	  			console.log('/home: Error 2');
+			  	console.log(err2);
+	  		} else {
+	  			var t = 'Home';
+				  res.render('home', { 
+				    title: t,
+				    login: true,
+				    signin: false,
+				    signup: false,
+				    dataitems: dataitems,
+				    username: req.session.username,
+				    email: req.session.email,
+				    color: req.session.color
+				  });
+	  		}
+	  	});
+	  }
+	});
+});
+
+app.get('/dataitem/:id', function (req, res) {
+	if (!req.session.login) {
+		res.redirect('/');
+		return;
+	}
+	var username = req.session.username;
+	var id = req.params.id;
+	var params1 = {
+		Key : {
+			id : {
+				S : id
+			}
+		},
+		TableName: 'dataitems'
+	};
+	dynamodb.getItem(params1, function (err1, data1) {
+	  if (err1) {
+	  	console.log('/dataitem/: Error 1');
+	  	console.log(err1);
+	  } else { 
+	  	var ditem = {};
+	  	ditem.isPub = data1.Item.isPub.N;
+	  	ditem.viewers = data1.Item.viewers.SS;
+	  	var permissiontoview = (ditem.viewers.indexOf(username) > -1) | ditem.isPub;
+	  	if (!permissiontoview) {
+	  		res.redirect('/home');
+				return;
+	  	}
+	  	ditem.id = data1.Item.id.S;
+	  	ditem.url = data1.Item.url.S;
+	  	ditem.type = data1.Item.type.S;
+	  	ditem.name = data1.Item.name.S;
+	  	ditem.isPub = data1.Item.isPub.N;
+	  	ditem.owner = data1.Item.owner.S;
+	  	if (data1.Item.owner.S === username) {
+		  	ditem.isOwner = 1;
+		  } else {
+		  	ditem.isOwner = 0;
+		  }
+		  ditem.info = '/dataitem/' + data1.Item.id.S;
+	  	var t = 'Data';
+		  res.render('data', { 
+		    title: t,
+		    login: true,
+		    signin: false,
+		    signup: false,
+		    dataitem: ditem,
+		    username: req.session.username,
+		    email: req.session.email,
+		    color: req.session.color
+		  });
+	  }
+	});
+});
+
+app.get('/upload', function (req, res) {
+	if (!req.session.login) {
+		res.redirect('/');
+		return;
+	}
+	var username = req.session.username;
+
+	var t = 'Upload';
+  res.render('upload', { 
+    title: t,
+    login: true,
+    signin: false,
+    signup: false,
+    username: req.session.username,
+    email: req.session.email,
+    color: req.session.color
+  });
+});
+
+app.get('/search', function (req, res) {
+	if (!req.session.login) {
+		res.redirect('/');
+		return;
+	}
+	var username = req.session.username;
+
+	var t = 'Search';
+  res.render('search', { 
     title: t,
     login: true,
     signin: false,
@@ -329,7 +486,7 @@ app.post('/changeColor', function (req, res) {
 		ExpressionAttributeValues : {
 			':c' : { N: color }
 		},
-		ReturnValues : "UPDATED_NEW"
+		ReturnValues : 'UPDATED_NEW'
 	};
 
 	dynamodb.updateItem(params1, function (err1, data1) {
@@ -345,6 +502,316 @@ app.post('/changeColor', function (req, res) {
 		}
 	});
 });
+
+app.post('/updatePub', function (req, res) {
+	var username = req.session.username;
+	var id = req.body.id;
+	var isPub = req.body.isPub;
+
+	var params1 = {
+		Key : {
+			id : {
+				S: id
+			}
+		},
+		TableName: 'dataitems'
+	};
+	dynamodb.getItem(params1, function (err1, data1) {
+		if (err1) {
+			console.log('/updatePub: Error 1');
+			console.log(err1);
+			res.send({success: false});
+			return;
+		} else {
+			if (data1.Item.owner.S !== username) {
+				res.send({success: false});
+				return;
+			} else {
+				var params2 = {
+					Key : {
+						id : {
+							S: id
+						}
+					},
+					TableName: 'dataitems',
+					UpdateExpression : 'SET isPub = :c',
+					ExpressionAttributeValues : {
+						':c' : { N: isPub }
+					},
+					ReturnValues : 'UPDATED_NEW'
+				};
+				dynamodb.updateItem(params2, function (err2, data2) {
+					if (err2) {
+						console.log('/updatePub: Error 2');
+						console.log(err1);
+						res.send({success: false});
+						return;
+					} else {
+						res.send({success: true});
+						return;
+					}
+				});
+			}
+		}
+	});
+});
+
+app.post('/addViewer', function (req, res) {
+	var username = req.session.username;
+	var id = req.body.id;
+	var viewer = req.body.viewer;
+	console.log(req.body);
+	var params1 = {
+		Key : {
+			id : {
+				S: id
+			}
+		},
+		TableName: 'dataitems'
+	};
+	dynamodb.getItem(params1, function (err1, data1) {
+		if (err1) {
+			console.log('/addViewer: Error 1');
+			console.log(err1);
+			res.send({success: false});
+			return;
+		} else {
+			if (username !== data1.Item.owner.S) {
+				res.send({success: false, msg: 'You do not have permission to add viewers.'});
+				return;
+			} else if (viewer === username) {
+				res.send({success: false, msg: 'You are already a viewer.'});
+				return;
+			} else if (data1.Item.viewers.SS.indexOf(viewer) > -1) {
+				res.send({success: false, msg: 'This user is already a viewer.'});
+				return;
+			} else {
+				var params2 = {
+					Key : {
+						username : {
+							S: viewer
+						}
+					},
+					TableName: 'users'
+				};
+				dynamodb.getItem(params2, function (err2, data2) {
+					if (err2) {
+						console.log('/addViewer: Error 2');
+						console.log(err2);
+						res.send({success: false});
+						return;
+					} else {
+						if (isObjectEmpty(data2)) {
+							res.send({success: false, msg: 'The username you entered does not exist.'});
+							return;
+						} else {
+							var viewers = data1.Item.viewers.SS;
+							viewers.push(viewer);
+							var params3 = {
+								Key : {
+									id : {
+										S: id
+									}
+								},
+								TableName: 'dataitems',
+								UpdateExpression : 'SET viewers = :c',
+								ExpressionAttributeValues : {
+									':c' : { SS: viewers }
+								},
+								ReturnValues : 'UPDATED_NEW'
+							};
+							dynamodb.updateItem(params3, function (err3, data3) {
+								if (err3) {
+									console.log('/addViewer: Error 3');
+									console.log(err3);
+									res.send({success: false});
+									return;
+								} else {
+									var dataitems = [];
+									if (data2.Item.dataitems === undefined) {
+										dataitems = [];
+									} else {
+										dataitems = data2.Item.dataitems.SS;
+									}
+									dataitems.push(id);
+									var params4 = {
+										Key : {
+											username : {
+												S: viewer
+											}
+										},
+										TableName: 'users',
+										UpdateExpression : 'SET dataitems = :c',
+										ExpressionAttributeValues : {
+											':c' : { SS: dataitems }
+										},
+										ReturnValues : 'UPDATED_NEW'
+									};
+									dynamodb.updateItem(params4, function (err4, data4) {
+										if (err4) {
+											console.log('/addViewers: Error 4');
+											console.log(err4);
+											res.send({success: false});
+											return;
+										} else {
+											res.send({success: true});
+											return;
+										}
+									});
+								}
+							});
+						}
+					}
+				});
+			}
+		}
+	});
+});
+
+app.post('/uploadfile', function (req, res) {
+	var username = req.session.username;
+	var filename = req.body.filename;
+	var filetype = req.body.filetype;
+	uploadToS3(req.file, filename, filetype, function (url) {
+		if (url == null) {
+			console.log('/uploadfile: Error 1');
+		} else {
+			console.log(url);
+			var k = shortid.generate();
+			var params2 = {
+				Item : {
+					id : {
+						S: k
+					},
+					type : {
+						S: filetype
+					},
+					name : {
+						S: filename
+					},
+					url : {
+						S : url
+					},
+					owner : {
+						S : username
+					},
+					isPub : {
+						N : '0'
+					},
+					viewers : {
+						SS : [
+							username
+						]
+					}
+				},
+				TableName : 'dataitems'
+			};
+			dynamodb.putItem(params2, function (err2, data2) {
+				if (err2) {
+					console.log('/uploadfile: Error 2');
+					console.log(err2);
+				} else {
+					var params3 = {
+						Key : {
+							username : {
+								S : username
+							}
+						},
+						TableName : 'users'
+					};
+					dynamodb.getItem(params3, function (err3, data3) {
+						if (err3) {
+							console.log('/uploadfile: Error 3');
+							console.log(err3);
+						} else {
+							var l = [];
+							if (data3.Item.dataitems) l = data3.Item.dataitems.SS;
+							l.push(k);
+							var params4 = {
+								Key : {
+									username : {
+										S: username
+									}
+								},
+								TableName : 'users',
+								UpdateExpression : 'SET dataitems = :c',
+								ExpressionAttributeValues : {
+									':c' : { SS: l }
+								},
+								ReturnValues : "UPDATED_NEW"
+							};
+
+							dynamodb.updateItem(params4, function (err4, data4) {
+								if (err4) {
+									console.log('/uploadfile: Error 4');
+									console.log(err4);
+								} else {
+									res.redirect('/home');
+									return;
+								}
+							});
+						}
+					});
+				}
+			});
+		}
+	});
+});
+
+var uploadToS3 = function (file, filename, type, callback) {
+  var file_suffix = uuid.v1();
+  var s3 = require('s3');
+  var client = s3.createClient({
+    maxAsyncS3: 20,     // this is the default 
+    s3RetryCount: 3,    // this is the default 
+    s3RetryDelay: 1000, // this is the default 
+    multipartUploadThreshold: 20971520, // this is the default (20 MB) 
+    multipartUploadSize: 15728640, // this is the default (15 MB) 
+    s3Options: {
+      accessKeyId: awsObj.accessKeyId,
+      secretAccessKey: awsObj.secretAccessKey
+      // any other options are passed to new AWS.S3() 
+      // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property 
+    },
+  });
+
+  var file_ext = '';
+
+  if (file.mimetype === 'application/pdf') {
+    file_ext = '.pdf';
+  } else if (file.mimetype === 'application/json') {
+  	file_ext = '.json';
+  } else if (file.mimetype === 'application/xml' || file.mimetype === 'text/xml') {
+  	file_ext = '.xml';
+  } else {
+    res.send({success: false, msg: 'Please upload only .pdf, .json, or .xml files!'});
+  }
+
+  var params = {
+    localFile: file.path,     
+    s3Params: {
+      Bucket: 'dlms',
+      Key: 'uploads/' + file_suffix + '/' + filename + file_ext
+      // other options supported by putObject, except Body and ContentLength. 
+      // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property 
+    },
+    defaultContentType: file.mimetype
+  };
+
+  var uploader = client.uploadFile(params);
+  uploader.on('error', function(err) {
+    console.error('unable to upload:', err.stack);
+  });
+  uploader.on('progress', function() {
+    console.log("progress", uploader.progressMd5Amount,
+              uploader.progressAmount, uploader.progressTotal);
+  });
+  uploader.on('end', function() {
+    console.log('done uploading');
+    var image_url = 'https://s3.amazonaws.com/dlms/uploads/' + file_suffix + '/' + filename + file_ext;
+    callback(image_url);
+  });
+};
 
 /////////////////
 

@@ -1,0 +1,67 @@
+<% layout( 'layout' ) -%>
+
+<script type="text/javascript" src="/dataitem.js"></script>
+
+<div class="container" align="center">
+	<br>
+	<p>Configure settings for data item <span id="dataid"><%= dataitem.id %></span>.</p>
+</div>
+<br>
+<div class="container">
+	<div class="row">
+		<div class="col-sm-6">
+			<p><strong>Filename: </strong><%= dataitem.name %></p>
+			<p><strong>Filetype: </strong><%= dataitem.type %></p>
+			<p><strong>URL: </strong><a href="<%= dataitem.url %>"><%= dataitem.url %></a></p>
+			<p><strong>Owner: </strong><%= dataitem.owner %></p>
+			<p id="isOwner" hidden><%= dataitem.isOwner %></p>
+			<p id="isPub" hidden><%= dataitem.isPub %></p>
+		</div>
+		<div class="col-sm-6">
+			<div class="radio">
+			  <label>
+			    <input type="radio" name="optionsRadios" id="optionsRadios1" value="0">
+			    Private
+			  </label>
+			</div>
+			<div class="radio">
+			  <label>
+			    <input type="radio" name="optionsRadios" id="optionsRadios2" value="1">
+			    Public
+			  </label>
+			</div>
+			<button id="updatebtn" class="dlmsBtn">Update</button>
+			<br><br>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Viewers</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% for (var i = 0; i < dataitem.viewers.length; i++) { %>
+						<tr>
+							<td><%= dataitem.viewers[i] %></td>
+						</tr>
+					<% } %>
+					<tr>
+						<td><input type="text" id="unInput" name="username" class="form-control" placeholder="Username of new viewer"></td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td>
+							<button id="addbtn" class="dlmsBtn">Add Viewer</button>
+							<span id="issue" style="color: #777; margin-left: 8px;"></span>
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+	</div>
+</div>
+<br><br>
+<div class="container" align="center">
+	<p>Preview of the file:</p>
+	<iframe src="<%= dataitem.url %>" style="width:80%; height:700px;" frameborder="0"></iframe>
+</div>

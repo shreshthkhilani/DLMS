@@ -1,16 +1,34 @@
 <% layout( 'layout' ) -%>
 
-<link rel="stylesheet" type="text/css" href="color.css">
-<script type="text/javascript" src="profile.js"></script>
+<link rel="stylesheet" type="text/css" href="/color.css">
+<script type="text/javascript" src="/profile.js"></script>
 
 <div class="container" align="center">
 	<br>
-	<p>Hello, <%= username %>! Your email address is <%= email %>.</p>
-	<br><span id="getcolor" hidden><%= color %></span>
-	<div class="bigcircle" id="circle1"><div class="colorcircle" id="cc1"></div></div>
-	<div class="bigcircle" id="circle2"><div class="colorcircle" id="cc2"></div></div>
-	<div class="bigcircle" id="circle3"><div class="colorcircle" id="cc3"></div></div>
-	<div class="bigcircle" id="circle4"><div class="colorcircle" id="cc4"></div></div>
-	<div class="bigcircle" id="circle5"><div class="colorcircle" id="cc5"></div></div>
-	<div class="bigcircle" id="circle6"><div class="colorcircle" id="cc6"></div></div>
+	<p>Hello, <%= username %>! Welcome to your DLMS Dashboard!</p>
+</div>
+<br>
+<div class="container">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Filename</th>
+				<th>Filetype</th>
+				<th>URL</th>
+				<th>is Public</th>
+				<th>Owner</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% for (var i = 0; i < dataitems.length; i++) { %>
+				<tr>
+					<td><a href="<%= dataitems[i].info %>"><%= dataitems[i].name %></a></td>
+					<td><%= dataitems[i].type %></td>
+					<td><a href="<%= dataitems[i].url %>"><%= dataitems[i].url %></a></td>
+					<td><%= dataitems[i].isPub %></td>
+					<td><%= dataitems[i].owner %></td>
+				</tr>
+			<% } %>
+		</tbody>
+	</table>
 </div>
