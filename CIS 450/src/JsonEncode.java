@@ -75,8 +75,8 @@ public class JsonEncode {
 		for(TreeNode child : node.getChildren()){
 			JsonObject obj = Json.createObjectBuilder()
 					.add("id", "e"+Integer.toString(edge))
-					.add("source", node.getId())
-					.add("target", child.getId())
+					.add("source", "n"+node.getId())
+					.add("target", "n"+child.getId())
 					.build();
 			ans.add(obj);
 			edge++;
