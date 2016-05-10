@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 public class XML {
 	
 	static Map<String, String> results = new HashMap<String, String>();
+	static String THEFUAK;
 	
   public void parse(String filename) throws Exception {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -25,6 +26,8 @@ public class XML {
     factory.setExpandEntityReferences(false);
 
     Document doc = factory.newDocumentBuilder().parse(new File(filename));
+    
+    THEFUAK = filename;
     
 //    XPathFactory xpf = XPathFactory.newInstance();
 //    XPath xp = xpf.newXPath();
@@ -39,13 +42,8 @@ public class XML {
     
     visit(doc, 0, null, 1);
     
-    upload();
   }
   
-  private void upload() {
-	// TODO Auto-generated method stub
-	
-}
 
 public static void visit(Node node, int level, String p, int ctr) {
 	String h, c = null;	
@@ -79,27 +77,27 @@ public static void visit(Node node, int level, String p, int ctr) {
     			try{
     				c = childNode.getParentNode().getNodeName();
     			} catch (NullPointerException e) {
-    				c = "document_id";
+    				c = THEFUAK;
     			}
     			
     			if (c.contains("#")) {
-    				c = "document_id";
+    				c = THEFUAK;
     			}
     			if(level == 0) {
-    				h = "document_id." + h;
+    				h = THEFUAK + "." + h;
     			}
     			else if (level == 1) {
-    				c = "document_id." + c;
-    				h = ctr + "elt" + level + "." + h;
+    				c = THEFUAK + "." + c;
+    				h = THEFUAK + "." +ctr + "elt" + level + "." + h;
     			}
     			else if (childNode.hasChildNodes()){
-    				h = ctr + "elt" + level + "." + h;
-    				c = ctr + "elt" + level + "." + c;
+    				h = THEFUAK + "." + ctr + "elt" + level + "." + h;
+    				c = THEFUAK + "." + ctr + "elt" + level + "." + c;
     				
     			}
     			System.out.println(c + ", " + h);
-    			Indexer.add(c.toLowerCase(), h.toLowerCase());
-				Linker.add(c.toLowerCase(), h.toLowerCase());
+    			Indexer.add(c.toLowerCase().trim(), h.toLowerCase().trim());
+				Linker.add(c.toLowerCase().trim(), h.toLowerCase().trim());
     			p = h;
     		} else {
     			//if (childNode.getParentNode().getParentNode().getParentNode().getParentNode().getNodeName() == null) System.out.println("new");
@@ -107,19 +105,19 @@ public static void visit(Node node, int level, String p, int ctr) {
 //    			System.out.println(childNode.getParentNode().getParentNode().getNodeName());
     			
     			if(level == 0) {
-    				h = "document_id." + h;
+    				h = THEFUAK + "." + h;
     			}
     			else if (level == 1) {
-    				c = "document_id." + c;
-    				h = ctr + "elt" + level + "." + h;
+    				c = THEFUAK + "." + c;
+    				h = THEFUAK + "." + ctr + "elt" + level + "." + h;
     			}
     			else if (childNode.hasChildNodes()){
-    				h = ctr + "elt" + level + "." + h;
-    				c = ctr + "elt" + level + "." + c;
+    				h = THEFUAK + "." + ctr + "elt" + level + "." + h;
+    				c = THEFUAK + "." + ctr + "elt" + level + "." + c;
     			}
     			System.out.println(h + ", " + c);
-    			Indexer.add(c.toLowerCase(), h.toLowerCase());
-				Linker.add(c.toLowerCase(), h.toLowerCase());
+    			Indexer.add(c.toLowerCase().trim(), h.toLowerCase().trim());
+				Linker.add(c.toLowerCase().trim(), h.toLowerCase().trim());
     			if (p != null) {
     				Indexer.add(p.toLowerCase(), h.toLowerCase());
     				Linker.add(p.toLowerCase(), h.toLowerCase());
