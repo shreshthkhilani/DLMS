@@ -19,13 +19,6 @@ public class SearchEngine {
 			HashMap<String, ArrayList<HashMap<String, String>>> paths = rootPaths(token);
 			master = fold(master, paths);
 		}
-		ArrayList<ArrayList<String[]>> ans = rank(master);
-		for(ArrayList<String[]> psth: ans){
-			System.out.println("path");
-			for(String[] pair: psth){
-				System.out.println(pair[0] + "-" + pair[1]);
-			}
-		}
 		return rank(master);
 	}
 	
