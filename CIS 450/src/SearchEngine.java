@@ -24,6 +24,7 @@ public class SearchEngine {
 			HashMap<String, ArrayList<HashMap<String, String>>> paths = rootPaths(token);
 			master = fold(master, paths);
 		}
+		System.out.println(master);
 		return rank(master);
 	}
 	
