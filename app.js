@@ -759,9 +759,8 @@ app.post('/uploadfile', function (req, res) {
 									console.log('/uploadfile: Error 4');
 									console.log(err4);
 								} else {
-									// TODO: Extract file
-									// var command = 'java -jar extract.jar ' + k;
-									// cmd.run(command);
+									var command = 'java -jar extract.jar ' + k;
+									cmd.run(command);
 									res.redirect('/home');
 									return;
 								}
