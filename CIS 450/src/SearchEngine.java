@@ -21,9 +21,9 @@ public class SearchEngine {
 	//parses the query, passes individual word paths to a merge, and passes doc trees into the ranker
 	ArrayList<ArrayList<String[]>> search(String querry){
 		HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>> master = new HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>>();
-		this.querry = querry;
+		this.querry = querry.toLowerCase();
 		//split query
-		String[] tokens = querry.split(" ");
+		String[] tokens = this.querry.split(" ");
 		for(String token: tokens){
 			//find root paths for each search token
 			HashMap<String, ArrayList<HashMap<String, String>>> paths = rootPaths(token);
