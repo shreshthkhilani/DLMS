@@ -760,7 +760,7 @@ app.post('/uploadfile', function (req, res) {
 									console.log(err4);
 								} else {
 									var command = 'java -jar extract.jar ' + k;
-									cmd.run(command);
+									//cmd.run(command);
 									res.redirect('/home');
 									return;
 								}
