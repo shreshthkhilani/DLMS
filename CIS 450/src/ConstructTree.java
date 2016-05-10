@@ -9,8 +9,8 @@ public class ConstructTree {
 	boolean addNode(String[] pair){
 		TreeNode key = new TreeNode(pair[1]);
 		TreeNode value = new TreeNode(pair[0]);
-		key.addChild(value);
 		if(head == null){
+			key.addChild(value);
 			head = key;
 			return true;
 		} else if (value.key.equals(head.key)){
@@ -18,6 +18,7 @@ public class ConstructTree {
 			head = key;
 			return true;
 		} else {
+			key.addChild(value);
 			return add(key, head);
 		}
 	}
