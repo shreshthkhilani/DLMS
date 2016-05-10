@@ -52,12 +52,13 @@ public class JsonEncode {
 	static ArrayList<JsonObject> nodeToJson(TreeNode node, int xposition){
 		ArrayList<JsonObject> ans = new ArrayList<JsonObject>();
 		JsonObject obj = Json.createObjectBuilder()
-				.add("id", id)
+				.add("id", "n"+Integer.toString(id))
 				.add("label", node.getkey())
 				.add("x", xposition)
 				.add("y", yposition)
 				.add("size", 1)
 				.build();
+		node.setId(id);
 		id++;
 		ans.add(obj);
 		yposition++;
@@ -73,9 +74,9 @@ public class JsonEncode {
 		ArrayList<JsonObject> ans = new ArrayList<JsonObject>();
 		for(TreeNode child : node.getChildren()){
 			JsonObject obj = Json.createObjectBuilder()
-					.add("id", edge)
-					.add("source", node.key)
-					.add("target", child.key)
+					.add("id", "e"+Integer.toString(edge))
+					.add("source", node.getId())
+					.add("target", child.getId())
 					.build();
 			ans.add(obj);
 			edge++;

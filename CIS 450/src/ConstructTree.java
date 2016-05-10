@@ -9,7 +9,6 @@ public class ConstructTree {
 	boolean addNode(String[] pair){
 		TreeNode key = new TreeNode(pair[1]);
 		TreeNode value = new TreeNode(pair[0]);
-		System.out.println(pair[1]+"-"+pair[0]);
 		key.addChild(value);
 		if(head == null){
 			head = key;
