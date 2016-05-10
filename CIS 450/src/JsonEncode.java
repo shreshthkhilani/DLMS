@@ -15,11 +15,12 @@ public class JsonEncode {
 	
 	public static JsonObject encode(ArrayList<ArrayList<String[]>> results){
 		ArrayList<JsonObject> nodeObj = new ArrayList<JsonObject>();
-		ArrayList<JsonObject> edgeObj = new ArrayList<JsonObject>();
-		
+		ArrayList<JsonObject> edgeObj = new ArrayList<JsonObject>();		
 		yposition = 0;
 		edge = 0;
 		id = 0;
+		
+		//changes the result list in to a tree format
 		for(ArrayList<String[]> tree: results){
 			ConstructTree con = new ConstructTree();
 			while(!tree.isEmpty()){
@@ -42,6 +43,8 @@ public class JsonEncode {
 		for(JsonObject edgeNode: edgeObj){
 			jarr2.add(edgeNode);
 		}
+		
+		//combines node and edge objects to form complete json
 		JsonObject obj = Json.createObjectBuilder()
 				.add("nodes", jarr)
 				.add("edges", jarr2)
@@ -50,6 +53,7 @@ public class JsonEncode {
 	    return obj;
 	}
 	
+	//create node objects for the graph
 	static ArrayList<JsonObject> nodeToJson(TreeNode node, Integer ypos, int xposition){
 		ArrayList<JsonObject> ans = new ArrayList<JsonObject>();
 		JsonObject obj = Json.createObjectBuilder()
@@ -74,6 +78,7 @@ public class JsonEncode {
 		return ans;
 	}
 	
+	//creates edge objects for the graph
 	static ArrayList<JsonObject> edgeToJson(TreeNode node){
 		ArrayList<JsonObject> ans = new ArrayList<JsonObject>();
 		for(TreeNode child : node.getChildren()){

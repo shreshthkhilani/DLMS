@@ -200,6 +200,7 @@ public class AmazonDynamoDB {
         }
     }
 
+    //creates an index pair
     static void newPair(String key, String value) {
         List<String> values = values(key);
         if(values == null){
@@ -213,6 +214,7 @@ public class AmazonDynamoDB {
         PutItemResult putItemResult = dynamoDB.putItem(putItemRequest);
     }
     
+    //creates a reverse index pair
     static void newReversePair(String key, String value) {
         List<String> keys = reverseValues(value);
         if(keys == null){
@@ -312,6 +314,7 @@ public class AmazonDynamoDB {
     }
         
     
+    //pulls values form an index
     static List<String> values(String key){
         List<String> list = new ArrayList<String>();
         
@@ -329,6 +332,7 @@ public class AmazonDynamoDB {
         return list;
     }
 
+    //pulls the values from a reverse index
     static List<String> reverseValues(String key){
         List<String> list = new ArrayList<String>();
         
@@ -346,6 +350,7 @@ public class AmazonDynamoDB {
         return list;
     }
     
+    //return a user's permission for a given doc
     static boolean returnPermission(String user, String id){
 	 	List<String> list = new ArrayList<String>();
 	 	String access = null;

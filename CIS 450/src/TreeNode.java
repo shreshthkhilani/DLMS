@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 
+//Creates a node that can be used to construct trees
 public class TreeNode {
 	String key;
 	ArrayList<TreeNode> children;

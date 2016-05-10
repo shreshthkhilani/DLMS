@@ -1,5 +1,6 @@
 import java.util.List;
 
+//basic indexer interaction
 public class Indexer {
 	Indexer(){}
 	
