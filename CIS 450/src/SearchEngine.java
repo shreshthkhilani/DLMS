@@ -6,9 +6,13 @@ import java.util.List;
 import java.util.Set;
 
 public class SearchEngine {
-	SearchEngine(){}
+	static String user;
 	
-	static ArrayList<ArrayList<String[]>> search(String querry){
+	SearchEngine(String user){
+		this.user = user;
+	}
+	
+	ArrayList<ArrayList<String[]>> search(String querry){
 		HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>> master = new HashMap<Integer, HashMap<String, ArrayList<ArrayList<String[]>>>>();
 		String[] tokens = querry.split(" ");
 		for(String token: tokens){
@@ -45,23 +49,25 @@ public class SearchEngine {
 				Iterator<String> iter2 = docs.keySet().iterator();
 				while(iter2.hasNext()){
 					String doc = iter2.next();
-					ArrayList<HashMap<String, String>> paths = docs.get(doc);
-					if(paths.equals(empty)){
-						paths = new ArrayList<HashMap<String, String>>();
-						HashMap<String, String> path = new HashMap<String, String>();
-						paths.add(path);
-						path.put(value,key);
-					} else {
-						for(HashMap<String, String> path: paths){
+					if(AmazonDynamoDB.returnPermission(user,doc)){
+						ArrayList<HashMap<String, String>> paths = docs.get(doc);
+						if(paths.equals(empty)){
+							paths = new ArrayList<HashMap<String, String>>();
+							HashMap<String, String> path = new HashMap<String, String>();
+							paths.add(path);
 							path.put(value,key);
-						}	
+						} else {
+							for(HashMap<String, String> path: paths){
+								path.put(value,key);
+							}	
+						}
+						ArrayList<HashMap<String, String>> update = ans.get(doc);
+						if(update == null){
+							update = new ArrayList<HashMap<String, String>>();
+						}
+						update.addAll(paths); 
+						ans.put(doc, update);
 					}
-					ArrayList<HashMap<String, String>> update = ans.get(doc);
-					if(update == null){
-						update = new ArrayList<HashMap<String, String>>();
-					}
-					update.addAll(paths); 
-					ans.put(doc, update);
 				}
 			}
 		}
@@ -192,20 +198,7 @@ public class SearchEngine {
 				ArrayList<ArrayList<String[]>> paths = docs.get(doc);
 				ArrayList<String[]> old_path = new ArrayList<String[]>();
 				for(ArrayList<String[]> path: paths){
-//					System.out.println("old_path:");
-//					for(String[] pair: old_path){
-//						System.out.println(pair[0] + "-" + pair[1]);
-//					}
-//					System.out.println("add_path:");
-//					for(String[] pair: path){
-//						System.out.println(pair[0] + "-" + pair[1]);
-//					}
 					combine2(old_path,path);
-//					System.out.println("new_path:");
-//					for(String[] pair: old_path){
-//						System.out.println(pair[0] + "-" + pair[1]);
-//					}
-//					System.out.println("");
 					if(rank.containsKey(doc)){
 						Double prev = rank.get(doc);
 						rank.put(doc, prev + Math.pow(constant,strength)/(double) path.size());
