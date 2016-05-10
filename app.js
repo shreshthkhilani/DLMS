@@ -674,65 +674,65 @@ app.post('/search', function (req, res) {
 	var query = req.body.query;
 
 	// TODO: Search
-	// var command = 'java -jar search.jar ' + username + ' "' + query + '"';
-	// cmd.get(command, function () {
-	// 	var queryResult = JSON.parse(fs.readFileSync('json/query.json', 'utf8'));
-	// 	res.send({success: true, tree: queryResult});
-	// 	return;
-	// });
-	
-	var x = {
-	  "nodes": [
-	    {
-	      "id": "n0",
-	      "label": "A node",
-	      "x": 0,
-	      "y": 0,
-	      "size": 3
-	    },
-	    {
-	      "id": "n1",
-	      "label": "Another node",
-	      "x": 3,
-	      "y": 1,
-	      "size": 2
-	    },
-	    {
-	      "id": "n2",
-	      "label": "And a last one",
-	      "x": 1,
-	      "y": 3,
-	      "size": 1
-	    },
-	    {
-	      "id": "n3",
-	      "label": "blah",
-	      "x": 0,
-	      "y": 6,
-	      "size": 3
-	    }
-	  ],
-	  "edges": [
-	    {
-	      "id": "e0",
-	      "source": "n0",
-	      "target": "n1"
-	    },
-	    {
-	      "id": "e1",
-	      "source": "n1",
-	      "target": "n2"
-	    },
-	    {
-	      "id": "e2",
-	      "source": "n2",
-	      "target": "n0"
-	    }
-	  ]
-	};
+	var command = 'java -jar ./jar/search.jar ' + username + ' "' + query + '"';
+	cmd.get(command, function () {
+		var queryResult = JSON.parse(fs.readFileSync('./jar/querry.json', 'utf8'));
+		res.send({success: true, tree: queryResult});
+		return;
+	});
 
-	res.send({success: true, tree: x});
-	return;
+	// var x = {
+	//   "nodes": [
+	//     {
+	//       "id": "n0",
+	//       "label": "A node",
+	//       "x": 0,
+	//       "y": 0,
+	//       "size": 3
+	//     },
+	//     {
+	//       "id": "n1",
+	//       "label": "Another node",
+	//       "x": 3,
+	//       "y": 1,
+	//       "size": 2
+	//     },
+	//     {
+	//       "id": "n2",
+	//       "label": "And a last one",
+	//       "x": 1,
+	//       "y": 3,
+	//       "size": 1
+	//     },
+	//     {
+	//       "id": "n3",
+	//       "label": "blah",
+	//       "x": 0,
+	//       "y": 6,
+	//       "size": 3
+	//     }
+	//   ],
+	//   "edges": [
+	//     {
+	//       "id": "e0",
+	//       "source": "n0",
+	//       "target": "n1"
+	//     },
+	//     {
+	//       "id": "e1",
+	//       "source": "n1",
+	//       "target": "n2"
+	//     },
+	//     {
+	//       "id": "e2",
+	//       "source": "n2",
+	//       "target": "n0"
+	//     }
+	//   ]
+	// };
+
+	// res.send({success: true, tree: x});
+	// return;
 });
 
 app.post('/uploadfile', function (req, res) {
