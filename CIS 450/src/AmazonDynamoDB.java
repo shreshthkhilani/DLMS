@@ -347,4 +347,32 @@ public class AmazonDynamoDB {
         }
         return list;
     }
+    
+    static boolean returnPermission(String user, String id){
+	 	List<String> list = new ArrayList<String>();
+	 	String access = null;
+	 	
+	 	Map<String, AttributeValue> expressionAttributeValues = new HashMap<String, AttributeValue>();
+	 	expressionAttributeValues.put(":id", new AttributeValue().withS(id));
+	 	ScanRequest scanRequest = new ScanRequest()
+	 		    .withTableName("dataitems")
+	 		    .withFilterExpression("id = :id")
+	 		    .withProjectionExpression("isPub, viewers")
+	 		    .withExpressionAttributeValues(expressionAttributeValues);
+	 	ScanResult result = dynamoDB.scan(scanRequest);
+	 	List<Map<String, AttributeValue>> results = result.getItems();
+	 	if(results.isEmpty()){
+	 		return false;
+	 	} else {
+	    	for (Map<String, AttributeValue> item : result.getItems()) {
+	    	    list = item.get("viewers").getSS();
+	    	    access = item.get("isPub").getN();
+	    	}
+	    	if(access.equals("1") || list.contains(user)){
+	    		return true;
+	    	} else {
+	    		return false;
+	    	}
+	 	}
+    }
 }
