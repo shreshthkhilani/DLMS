@@ -305,11 +305,8 @@ public class AmazonDynamoDB {
                     }
                     else continue;
                 }
-            }
-            
-            
+            }      
         }
-        
         return results;
     }
         
